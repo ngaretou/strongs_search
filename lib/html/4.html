@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help</title>
+</head>
+<body>
+    
+    <h2>Download the file</h2>
+    Click on the button and your new file will download to your Download folder. 
+    <h2>Back up your old appDef file</h2>
+    There are several ways to do the next step, but a good one is to rename your old appDef, copy the new appDef into the folder, and rename the new appDef name the original name. 
+    <h2>Enable the new transliteration</h2>
+    If you have not yet added your transliteration into SAB, just be sure to add the language in Appearance/Interface in the Lanugages tab with the same language code. 
+<br><br>
+If you see problems with variables like <i>%s</i> or <i>%book</i>, you can deal with them in TECkit map by adding something like this after the SFM section:
+<br><br>
+<tt><pre>
+----------------------------------------
+; ----------<br>
+; Scripture App Builder (SAB) related <br>
+; ----------<br>
+'%,d'                      >       '%,d'<br>
+'%book '                   >       '%book '<br>
+'%chapter '                >       '%chapter '<br>
+'%s'                       >       '%s'<br>
+----------------------------------------
+</pre></tt>
+<br><br>
+    If something goes wrong or takes some time to figure out, you can go back to your backed up file. 
+</body>
+</html>
