@@ -49,7 +49,7 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
-          title: const Text("SAB menu transliteration helper"),
+          title: const Text("Strong's search"),
           automaticallyImplyLeading: true,
         ),
         //The main view of the app is three columns: the nav bar, the main workign area, and help pane

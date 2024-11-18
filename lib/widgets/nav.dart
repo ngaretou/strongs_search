@@ -35,10 +35,12 @@ class _NavBarState extends State<NavBar> {
                 value: Theme.of(context).brightness == Brightness.dark
                     ? true
                     : false,
-                onChanged: (bool newValue) {
+                onChanged: (_) {
                   final brightness = Theme.of(context).brightness;
+
                   ThemeProvider themeProvider =
                       Provider.of<ThemeProvider>(context, listen: false);
+                  themeProvider.setTheme(ThemeData.dark());
                   if (brightness == Brightness.dark) {
                     userPrefsBox.put('theme', 'light');
                     themeProvider.setTheme(ThemeData.light());
@@ -75,8 +77,7 @@ class _NavBarState extends State<NavBar> {
             leading: const Icon(Icons.feedback_outlined),
             title: const Text('Feedback'),
             onTap: () async {
-              const url =
-                  'https://github.com/ngaretou/sab_menu_transliteration_helper/issues';
+              const url = 'https://github.com/ngaretou/strongs_search/issues';
               if (await canLaunchUrl(Uri.parse(url))) {
                 await launchUrl(Uri.parse(url),
                     mode: LaunchMode.platformDefault);
@@ -89,8 +90,7 @@ class _NavBarState extends State<NavBar> {
             leading: const Icon(Icons.code),
             title: const Text('Source Code'),
             onTap: () async {
-              const url =
-                  'https://github.com/ngaretou/sab_menu_transliteration_helper';
+              const url = 'https://github.com/ngaretou/strongs_search';
               if (await canLaunchUrl(Uri.parse(url))) {
                 await launchUrl(Uri.parse(url),
                     mode: LaunchMode.platformDefault);
@@ -119,13 +119,15 @@ void showAbout(BuildContext context) async {
               child: ListBody(children: [
             Row(
               children: [
-                Container(
+                const SizedBox(
                   width: 50,
                   height: 50,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage("assets/icons/icon.png"),
-                    ),
+                  child: FittedBox(
+                    child: Icon(Icons.center_focus_strong),
+                    // decoration: const BoxDecoration(
+                    //   image: DecorationImage(
+                    //     image: AssetImage("assets/icons/icon.png"),
+                    //   ),
                     // color: Colors.transparent,
                     // borderRadius: BorderRadius.all(Radius.circular(10)),
                   ),
@@ -140,7 +142,7 @@ void showAbout(BuildContext context) async {
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 200),
                       child: Text(
-                        'SAB menu helper',
+                        'Strong\'s search',
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                     ),
@@ -154,34 +156,34 @@ void showAbout(BuildContext context) async {
             const SizedBox(
               height: 10,
             ),
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () async {
-                  const url = 'https://software.sil.org/scriptureappbuilder/';
-                  if (await canLaunchUrl(Uri.parse(url))) {
-                    await launchUrl(Uri.parse(url),
-                        mode: LaunchMode.platformDefault);
-                  } else {
-                    throw 'Could not launch $url';
-                  }
-                },
-                child: RichText(
-                    text: TextSpan(
-                  children: [
-                    TextSpan(
-                      style: Theme.of(context).textTheme.bodyLarge,
-                      text: 'For more see ',
-                    ),
-                    TextSpan(
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          color: Theme.of(context).colorScheme.primary),
-                      text: 'Scripture App Builder',
-                    ),
-                  ],
-                )),
-              ),
-            ),
+            // MouseRegion(
+            //   cursor: SystemMouseCursors.click,
+            //   child: GestureDetector(
+            //     onTap: () async {
+            //       const url = 'https://software.sil.org/scriptureappbuilder/';
+            //       if (await canLaunchUrl(Uri.parse(url))) {
+            //         await launchUrl(Uri.parse(url),
+            //             mode: LaunchMode.platformDefault);
+            //       } else {
+            //         throw 'Could not launch $url';
+            //       }
+            //     },
+            //     child: RichText(
+            //         text: TextSpan(
+            //       children: [
+            //         TextSpan(
+            //           style: Theme.of(context).textTheme.bodyLarge,
+            //           text: 'For more see ',
+            //         ),
+            //         TextSpan(
+            //           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+            //               color: Theme.of(context).colorScheme.primary),
+            //           text: 'Scripture App Builder',
+            //         ),
+            //       ],
+            //     )),
+            //   ),
+            // ),
           ])),
           actions: <Widget>[
             OutlinedButton(

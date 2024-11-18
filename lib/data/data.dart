@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../data/strongs_greek_dictionary.dart';
 import '../data/strongs_hebrew_dictionary.dart';
 
@@ -6,46 +7,69 @@ import '../data/strongs_hebrew_dictionary.dart';
 
 class Strongs {
   String id;
-  String xlit;
-  String pron;
-  String derivation;
-  String strongsDef;
-  String kjvDef;
+  String lemma;
+  String lang;
+  String? xlit;
+  String? pron;
+  String? derivation;
+  String? strongsDef;
+  String? kjvDef;
 
   Strongs({
     required this.id,
-    required this.xlit,
-    required this.pron,
-    required this.derivation,
-    required this.strongsDef,
-    required this.kjvDef,
+    required this.lemma,
+    required this.lang,
+    this.xlit,
+    this.pron,
+    this.derivation,
+    this.strongsDef,
+    this.kjvDef,
   });
-
-  factory Strongs.fromMap(Map<String, Map<String, String>> data) {
-    var keys = data.keys;
-    var values = data.values.first;
-
-    return Strongs(
-        id: keys.first,
-        xlit: values['xlit']!,
-        pron: values['pron']!,
-        derivation: values['derivation']!,
-        strongsDef: values['strongsDef']!,
-        kjvDef: values['kjvDef']!);
-  }
 }
 
-getData() async {
-  Map<String, Map<String, String>> allEntries = {};
+Future<List<Strongs>> getData() async {
+  List<Strongs> returnMe = [];
 
-  allEntries.addAll(strongsHebrewDictionary);
-  allEntries.addAll(strongsGreekDictionary);
+  // hebrew
+  try {
+    strongsHebrewDictionary.forEach((k, v) {
+      var strong = Strongs(
+          id: k,
+          lemma: v['lemma']!,
+          lang: 'Heb',
+          xlit: v['xlit'],
+          pron: v['pron'],
+          derivation: v['derivation'],
+          strongsDef: v['strongs_def'],
+          kjvDef: v['kjv_def']);
+      returnMe.add(strong);
+    });
+  } catch (e) {
+    debugPrint(e.toString());
+  }
 
-  allEntries.forEach((k, v) => Strongs(
-      id: k,
-      xlit: v['xlit']!,
-      pron: v['pron']!,
-      derivation: v['derivation']!,
-      strongsDef: v['strongsDef']!,
-      kjvDef: v['kjvDef']!));
+  // "H2":{"lemma":"אַב","xlit":"ʼab","pron":"ab","derivation":"(Aramaic) corresponding to H1 (אָב)","strongs_def":"{father}","kjv_def":"father."},
+
+  // greek
+
+  try {
+    strongsGreekDictionary.forEach((k, v) {
+      var strong = Strongs(
+          id: k,
+          lemma: v['lemma']!,
+          lang: 'Grk',
+          xlit: v['translit'],
+          pron: v['pron'],
+          derivation: v['derivation'],
+          strongsDef: v['strongs_def'],
+          kjvDef: v['kjv_def']);
+      returnMe.add(strong);
+    });
+  } catch (e) {
+    debugPrint(e.toString());
+  }
+
+  // "strongs_def":" to complete fully","derivation":"from G1537 (ἐκ) and G5055 (τελέω);","translit":"ekteléō","lemma":"ἐκτελέω","kjv_def":"finish"
+
+  return returnMe;
 }

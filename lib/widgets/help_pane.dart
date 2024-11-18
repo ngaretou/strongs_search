@@ -78,6 +78,7 @@ class _HelpPaneState extends State<HelpPane> {
                   )),
             ),
           ),
+
           // This is the part that changes and if conditions are right fades.
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 500),
@@ -127,14 +128,21 @@ class HelpText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    PageTracker pageTracker = Provider.of<PageTracker>(context, listen: true);
+    // PageTracker pageTracker = Provider.of<PageTracker>(context, listen: true);
 
     // html section builder
     Widget htmlSection(Key key, String url) {
+      //
       //This is where we grab the HTML from the asset folder
+      String htmlSection = 'error';
+
       Future<String?> fetchHtmlSection(String url) async {
-        String htmlSection =
-            await DefaultAssetBundle.of(context).loadString(url);
+        try {
+          htmlSection = await DefaultAssetBundle.of(context).loadString(url);
+        } catch (e) {
+          debugPrint(e.toString());
+        }
+
         return htmlSection;
       }
 
@@ -159,8 +167,8 @@ class HelpText extends StatelessWidget {
     return SingleChildScrollView(
       child: AnimatedSwitcher(
           duration: Durations.extralong4,
-          child: htmlSection(
-              UniqueKey(), "assets/html/${pageTracker.currentPage}.html")),
+          // child: htmlSection(UniqueKey(), "assets/html/${pageTracker.currentPage}.html")),
+          child: htmlSection(UniqueKey(), "assets/html/0.html")),
     );
   }
 }
