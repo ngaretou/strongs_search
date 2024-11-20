@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-
-import 'package:provider/provider.dart';
-import '../providers/nav_controller.dart';
 import '../data/data.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Main body view, mainly a pageview builder
 class Body extends StatefulWidget {
@@ -68,7 +66,7 @@ class _BodyState extends State<Body> {
           break;
         case 'orig':
           tempresults = allStrongs.where((strong) {
-            final unaccentedSearchString = removeAccents(strong.xlit!);
+            final unaccentedSearchString = removeAccents(strong.lemma);
             return search.hasMatch(unaccentedSearchString);
           }).toList();
           break;
@@ -83,10 +81,10 @@ class _BodyState extends State<Body> {
         case 'both':
           break;
         case 'heb':
-          results.where((strongs) => strongs.lang == 'heb');
+          results.removeWhere((strongs) => strongs.lang == 'Grk');
           break;
         case 'grk':
-          results.where((strongs) => strongs.lang == 'grk');
+          results.removeWhere((strongs) => strongs.lang == 'Heb');
           break;
         default:
       }
@@ -96,32 +94,93 @@ class _BodyState extends State<Body> {
 
     strongTile(Strongs strong) {
       var heading = Theme.of(context).textTheme.headlineSmall;
-      return Card(
-        color: Theme.of(context).colorScheme.tertiaryContainer,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  if (strong.xlit != null)
-                    Text(
-                      strong.xlit!,
-                      style: heading,
-                    ),
-                  const SizedBox(width: 20),
-                  Text(strong.lemma, style: heading),
-                ],
-              ),
-              Row(
-                children: [
-                  if (strong.strongsDef != null)
-                    Expanded(child: Text(strong.strongsDef!)),
-                  if (strong.kjvDef != null)
-                    Expanded(child: Text(strong.kjvDef!))
-                ],
-              )
-            ],
+      return GestureDetector(
+        onTap: () async {
+          String lang = '';
+          String num = strong.id.substring(1);
+
+          if (strong.lang == 'Heb') {
+            lang = 'hebrew';
+          } else {
+            lang = 'greek';
+          }
+
+          String url = 'https://biblehub.com/$lang/$num.htm';
+          if (await canLaunchUrl(Uri.parse(url))) {
+            await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
+          } else {
+            throw 'Could not launch $url';
+          }
+        },
+        child: Card(
+          color: Theme.of(context).colorScheme.tertiaryContainer,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 250,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (strong.xlit != null)
+                        Text(
+                          strong.xlit!,
+                          style: heading,
+                        ),
+                      const SizedBox(height: 10),
+                      Text(strong.lemma, style: heading),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 40,
+                ),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (strong.strongsDef != null)
+                        (Text(
+                          'Strong\'s definition:',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelSmall!
+                              .copyWith(fontStyle: FontStyle.italic),
+                        )),
+                      if (strong.strongsDef != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0, bottom: 12),
+                          child: (Text(strong.strongsDef!)),
+                        ),
+                      if (strong.kjvDef != null)
+                        (Text(
+                          'KJV definition:',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelSmall!
+                              .copyWith(fontStyle: FontStyle.italic),
+                        )),
+                      if (strong.kjvDef != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: (Text(strong.kjvDef!)),
+                        )
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 40,
+                ),
+                Column(
+                  children: [
+                    Text(strong.id),
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       );
@@ -134,26 +193,23 @@ class _BodyState extends State<Body> {
         // bottomLeft: Radius.circular(10),
       ),
       child: Container(
-        color: Theme.of(context)
-            .colorScheme
-            .surfaceContainerHighest
-            .withOpacity(.3),
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: FutureBuilder(
-                  future: datainit,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else {
-                      allStrongs.clear();
-                      allStrongs.addAll(snapshot.data!);
-                      return Padding(
-                        padding:
-                            const EdgeInsets.only(top: 20.0, right: 8, left: 8),
-                        child: Column(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: FutureBuilder(
+                    future: datainit,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else {
+                        allStrongs.clear();
+                        allStrongs.addAll(snapshot.data!);
+                        return Column(
                           children: [
+                            SizedBox(height: 20),
                             Form(
                               key: formKey,
                               child: Column(
@@ -164,25 +220,70 @@ class _BodyState extends State<Body> {
                                         CrossAxisAlignment.center,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      SizedBox(
-                                        width: 400,
-                                        child: TextFormField(
-                                          controller: freeTextSearchController,
-                                          onFieldSubmitted: (value) => search(),
-                                          decoration: InputDecoration(
-                                              filled: true,
-                                              hintText:
-                                                  'Enter your search term',
-                                              suffixIcon: IconButton(
-                                                onPressed: () =>
-                                                    freeTextSearchController
-                                                        .clear(),
-                                                icon: const Icon(Icons.clear),
-                                              )
+                                      // FilledButton(
+                                      //     onPressed: () {
+                                      //       List<String> charsinmap = [];
+                                      //       // get existing chars in map
+                                      //       accentsMap.forEach((k, v) {
+                                      //         charsinmap.add(k);
+                                      //         charsinmap.add(v);
+                                      //       });
+                                      //       Set<String> charsinmaptoset =
+                                      //           charsinmap.toSet();
+                                      //       List<String> listchars =
+                                      //           charsinmaptoset.toList();
 
-                                              // The validator receives the text that the user has entered.
-                                              ),
-                                        ),
+                                      //       // now get all chars in the transliterations
+                                      //       List<String> allcharsinstrongs = [];
+                                      //       for (var strong in allStrongs) {
+                                      //         allcharsinstrongs.addAll(
+                                      //             strong.xlit!.characters);
+                                      //       }
+                                      //       Set<String> allcharsinstrongsset =
+                                      //           allcharsinstrongs.toSet();
+                                      //       List<String> liststrongs =
+                                      //           allcharsinstrongsset.toList();
+
+                                      //       liststrongs.removeWhere((letter) =>
+                                      //           listchars.contains(letter));
+
+                                      //       for (var letter in liststrongs) {
+                                      //         // ignore: avoid_print
+                                      //         print(letter);
+                                      //       }
+                                      //     },
+                                      //     child: Text('data test')),
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 400,
+                                            child: TextFormField(
+                                              controller:
+                                                  freeTextSearchController,
+                                              onEditingComplete: () => search(),
+                                              onFieldSubmitted: (value) =>
+                                                  search(),
+                                              decoration: InputDecoration(
+                                                  filled: true,
+                                                  hintText:
+                                                      'Enter your search term',
+                                                  suffixIcon: IconButton(
+                                                    onPressed: () =>
+                                                        freeTextSearchController
+                                                            .clear(),
+                                                    icon:
+                                                        const Icon(Icons.clear),
+                                                  )
+
+                                                  // The validator receives the text that the user has entered.
+                                                  ),
+                                            ),
+                                          ),
+                                          IconButton(
+                                              onPressed: search,
+                                              icon: Icon(
+                                                  Icons.arrow_circle_right))
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -243,26 +344,35 @@ class _BodyState extends State<Body> {
                                     },
                                   ),
                                   SizedBox(height: 20),
+                                  if (results.isNotEmpty)
+                                    Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              right: 8.0, bottom: 8),
+                                          child:
+                                              Text('${results.length} results'),
+                                        )),
                                 ],
                               ),
                             ),
                           ],
-                        ),
-                      );
-                    }
-                  }),
-            ),
-            if (results.isNotEmpty)
-              SliverToBoxAdapter(
-                child: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: 80,
-                    shrinkWrap: true,
-                    itemBuilder: (context, i) {
-                      return strongTile(results[i]);
+                        );
+                      }
                     }),
-              )
-          ],
+              ),
+              if (results.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: results.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, i) {
+                        return strongTile(results[i]);
+                      }),
+                )
+            ],
+          ),
         ),
       ),
     ));
@@ -270,71 +380,93 @@ class _BodyState extends State<Body> {
 }
 
 String removeAccents(String input) {
-  const Map<String, String> accentsMap = {
-    'á': 'a',
-    'à': 'a',
-    'ä': 'a',
-    'â': 'a',
-    'ã': 'a',
-    'å': 'a',
-    'ā': 'a',
-    'é': 'e',
-    'è': 'e',
-    'ë': 'e',
-    'ê': 'e',
-    'ē': 'e',
-    'í': 'i',
-    'ì': 'i',
-    'ï': 'i',
-    'î': 'i',
-    'ī': 'i',
-    'ó': 'o',
-    'ò': 'o',
-    'ö': 'o',
-    'ô': 'o',
-    'õ': 'o',
-    'ø': 'o',
-    'ō': 'o',
-    'ú': 'u',
-    'ù': 'u',
-    'ü': 'u',
-    'û': 'u',
-    'ū': 'u',
-    'ç': 'c',
-    'ñ': 'n',
-    'ß': 'ss',
-    'Á': 'A',
-    'À': 'A',
-    'Ä': 'A',
-    'Â': 'A',
-    'Ã': 'A',
-    'Å': 'A',
-    'Ā': 'A',
-    'É': 'E',
-    'È': 'E',
-    'Ë': 'E',
-    'Ê': 'E',
-    'Ē': 'E',
-    'Í': 'I',
-    'Ì': 'I',
-    'Ï': 'I',
-    'Î': 'I',
-    'Ī': 'I',
-    'Ó': 'O',
-    'Ò': 'O',
-    'Ö': 'O',
-    'Ô': 'O',
-    'Õ': 'O',
-    'Ø': 'O',
-    'Ō': 'O',
-    'Ú': 'U',
-    'Ù': 'U',
-    'Ü': 'U',
-    'Û': 'U',
-    'Ū': 'U',
-    'Ç': 'C',
-    'Ñ': 'N'
-  };
-
   return input.split('').map((char) => accentsMap[char] ?? char).join();
 }
+
+const Map<String, String> accentsMap = {
+  'ʼ': '',
+  'ʻ': '',
+  '’': '',
+  '-': '',
+  'á': 'a',
+  'à': 'a',
+  'ä': 'a',
+  'â': 'a',
+  'ã': 'a',
+  'å': 'a',
+  'ā': 'a',
+  'ă': 'a',
+  'é': 'e',
+  'è': 'e',
+  'ë': 'e',
+  'ê': 'e',
+  'ḗ': 'e',
+  'ē': 'e',
+  'ᵉ': 'e',
+  'ĕ': 'e',
+  'ḕ': 'e',
+  'í': 'i',
+  'ì': 'i',
+  'ï': 'i',
+  'î': 'i',
+  'ī': 'i',
+  'ḯ': 'i',
+  'ó': 'o',
+  'ò': 'o',
+  'ö': 'o',
+  'ô': 'o',
+  'õ': 'o',
+  'ø': 'o',
+  'ō': 'o',
+  'ṓ': 'o',
+  'ŏ': 'o',
+  'ṑ': 'o',
+  'ú': 'u',
+  'ù': 'u',
+  'ü': 'u',
+  'û': 'u',
+  'ū': 'u',
+  'ç': 'c',
+  'ý': 'y',
+  'ŷ': 'y',
+  'ÿ': 'y',
+  'ñ': 'n',
+  'ß': 'ss',
+  'Á': 'A',
+  'À': 'A',
+  'Ä': 'A',
+  'Â': 'A',
+  'Ã': 'A',
+  'Å': 'A',
+  'Ā': 'A',
+  'Ă': 'A',
+  'É': 'E',
+  'È': 'E',
+  'Ë': 'E',
+  'Ê': 'E',
+  'Ē': 'E',
+  'Ḗ': 'E',
+  'Ĕ': 'E',
+  'Í': 'I',
+  'Ì': 'I',
+  'Ï': 'I',
+  'Î': 'I',
+  'Ī': 'I',
+  'Ó': 'O',
+  'Ò': 'O',
+  'Ö': 'O',
+  'Ô': 'O',
+  'Õ': 'O',
+  'Ø': 'O',
+  'Ō': 'O',
+  'Ú': 'U',
+  'Ù': 'U',
+  'Ü': 'U',
+  'Û': 'U',
+  'Ū': 'U',
+  'Ç': 'C',
+  'Ñ': 'N',
+  'ṭ': 't',
+  'Ṭ': 'T',
+  'ˢ': 's'
+};
