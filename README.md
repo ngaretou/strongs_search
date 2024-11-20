@@ -1,16 +1,9 @@
 # strongs_search
 
-A new Flutter project.
+Strong's search
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## What is this?
+    
+Sometimes people need a way to search Strong's numbers in certain ways. This app is an attempt to help by providing different kinds of ways of searching those words.
+The search term will search for the result without taking into account accents - in other words the search function strips the accents off the Strong's transliterated words.
+Powered by Flutter. 
